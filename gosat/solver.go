@@ -46,14 +46,14 @@ func RemoveZeroes(xs []string) Cnf {
     return result
 }
 
-func getCnf(filename string) Cnf {
+func getCnf(filename string) (Cnf, error) {
     file, err := os.ReadFile(filename)
     
     if err != nil {
-        fmt.Println(err)
+        return nil, err
     }
 
-    return parseDimacs(string(file))
+    return parseDimacs(string(file)), nil
 }
 
 
@@ -139,7 +139,7 @@ func contains(slice []Var, item Var) bool {
     return false
 }
 
-func printData(vars []int, sat bool, time time.Duration, initTime time.Duration, unit int, treeNodes int) {
+func printData(vars []int, sat bool, initTime time.Duration, time time.Duration, unit int, treeNodes int) {
     if sat {
         fmt.Println("SAT")
         fmt.Println(vars)
@@ -159,8 +159,13 @@ func main() {
     filepath := args[1]
 
     startParse := time.Now()
-    cnf := getCnf(filepath)
+    cnf, err := getCnf(filepath)
     parseTime := time.Since(startParse)
+
+    if err != nil {
+        fmt.Println(err)
+        return
+    }
 
     startDpll := time.Now()
     vars, sat, unitCount, nodes := Dpll(cnf)
